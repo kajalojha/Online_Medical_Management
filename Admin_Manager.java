@@ -6,13 +6,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-import static Online_Medical_Management_System.Online_Medical_Management_System.doctorManager;
-import static Online_Medical_Management_System.Online_Medical_Management_System.scanner;
+import static Online_Medical_Management_System.Online_Medical_Management_System.*;
 
 
 public class Admin_Manager {
     Admin admin = new Admin("101" , "kajal","kajal@gmail.com ", "1529");
     List<Admin> adminList ;
+    List<Donor>donorList;
     List<Appointment>pendingAppointmentlist ;
     List<Appointment>confirmAppointmentlist ;
 
@@ -20,43 +20,9 @@ public class Admin_Manager {
         adminList = new ArrayList<>();
         pendingAppointmentlist = new ArrayList<>();
         confirmAppointmentlist = new ArrayList<>();
-    }
-    public void scheduleAppointment() {
-
-        Scanner scanner = new Scanner(System.in);
-
-        System.out.println("Enter patient details to schedule appointment:");
-        System.out.println("Enter patient ID:");
-        String patientId = scanner.nextLine();
-        System.out.println("Enter doctor ID:");
-        String doctorId = scanner.nextLine();
-        System.out.println("Enter appointment date and time (YYYY-MM-DD HH:MM):");
-        String dateTimeString = scanner.nextLine();
-
-        // Parse date and time string into LocalDateTime object
-        LocalDateTime appointmentDateTime = LocalDateTime.parse(dateTimeString, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-
-        // Check if doctor is available at the specified date and time
-        Doctor doctor = findDoctorById(doctorId);
-        if (doctor != null && isDoctorAvailable(doctor, appointmentDateTime)) {
-            // Create appointment and add to pending list
-            Appointment appointment = new Appointment(patientId, doctorId, appointmentDateTime);
-            pendingAppointmentlist.add(appointment);
-            System.out.println("Appointment added to pending list.");
-        } else {
-            System.out.println("Doctor is not available at the specified date and time.");
-        }
+        donorList = new ArrayList<>();
     }
 
-    // Method to find doctor by ID
-    private Doctor findDoctorById(String doctorId) {
-        for (Doctor doctor : doctorManager.doctorList) {
-            if (doctor.getDoc_id().equals(doctorId)) {
-                return doctor;
-            }
-        }
-        return null; // Doctor not found
-    }
 
     public void registerAdmin()
     {
@@ -80,39 +46,7 @@ public class Admin_Manager {
         System.out.println("Admin added successfully..");
         System.out.println(adminList);
     }
-//    public boolean loginAdmin(){
-//        System.out.println("enter admin id ");
-//        String id = scanner.nextLine();
-//        scanner.nextLine();
-//        System.out.println("enter password ");
-//        String pass = scanner.nextLine();
-//        if(id.equals(admin.getAdmin_id()) && pass.equals(admin.getAdmin_password())){
-//            System.out.println("admin added successfully ..");
-//            return true;
-//        }
-//        else{
-//            System.out.println("admin does not exist,please register your sels first...");
-//            return false;
-//        }
-//    }
-public boolean isDoctorAvailable(Doctor doctor, LocalDateTime dateTime) {
-    // Get the doctor's appointments
-    List<Appointment> appointments = doctor.getAppointments();
 
-    // Check each appointment to see if it conflicts with the specified date and time
-    for (Appointment appointment : appointments) {
-        LocalDateTime appointmentDateTime = appointment.getDateTime();
-        // Check if the appointment overlaps with the specified date and time
-        if (appointmentDateTime.equals(dateTime) || appointmentDateTime.minusMinutes(30).isBefore(dateTime)
-                && appointmentDateTime.plusMinutes(30).isAfter(dateTime)) {
-            // Doctor is not available due to a conflicting appointment
-            return false;
-        }
-    }
-
-    // Doctor is available at the specified date and time
-    return true;
-}
     public List<Appointment> getAppointments(String doctorId) {
         Doctor doctor = findDoctorByid(doctorId);
         if (doctor != null) {
@@ -149,7 +83,121 @@ public boolean loginAdmin() {
     return false; // Admin not found, return false
 }
 
+    public void addDonor() {
+        System.out.println("Enter the donor details:");
+        System.out.println("Enter the id:");
+        String id = scanner.nextLine();
+        scanner.nextLine();
+        System.out.println("Enter the blood group :");
+        String bloodGroup = scanner.nextLine();
+        System.out.println("Enter the email:");
+        String email = scanner.nextLine();
+        System.out.println("Enter the phone number:");
+        String phonenumber = scanner.nextLine();
+        //check doctor already exist or not
+        for(Donor donor : donorList){
+            if(donor.getDonorId().equals(id)){
+                System.out.println(" donor already exists ");
+                return;
+            }
+        }
+       Donor donor = new Donor(id , bloodGroup , email ,phonenumber)  ;
+        donorList.add(donor);
+        System.out.println(" donor added successfully !!! ");
+        System.out.println(donorList);
+    }
+    public void deleteDonor() {
+        System.out.println("Enter the User details that you want to delete :");
+        System.out.println("Enter the id:");
+        String id = scanner.nextLine();
+        scanner.nextLine();
+        System.out.println("Enter the email :");
+        String email = scanner.nextLine();
+        //check doctor already exist or not
+        for(Donor donor : donorList){
+            if(donor.getDonorId().equals(id)){
+                donorList.remove(donor);
+                System.out.println(" donor deleted  successfully  ");
+                return;
+            }
+        }
 
+        System.out.println("invalid information !!! ");
+
+    }
+    public void displayPendingAppointment()
+    {
+        System.out.println("pending appointmnts :");
+        for(Appointment appointment : pendingAppointmentlist){
+            System.out.println(appointment);
+        }
+    }
+    public void approveAppointment(Appointment appointment) {
+        pendingAppointmentlist.remove(appointment);
+      confirmAppointmentlist.add(appointment);
+        System.out.println("Appointment approved and moved to confirmed list.");
+    }
+//public void approveAppointment() {
+//    System.out.println("enter the appointment id to approve ");
+//    String ap_id = scanner.nextLine();
+//    System.out.println("enter the ");
+//    pendingAppointmentlist.remove(appointment);
+//    confirmAppointmentlist.add(appointment);
+//    System.out.println("Appointment approved and moved to confirmed list.");
+//}
+    public void rejecttAppointment(Appointment appointment) {
+        pendingAppointmentlist.remove(appointment);
+        System.out.println("Appointment rejected.");
+    }
+
+    public void addPendingAppointment(Appointment appointment) {
+        pendingAppointmentlist.add(appointment);
+        System.out.println("Appointment added to pending list.");
+    }
+    public void scheduleAppointment(){
+        System.out.println("enter patient id ");
+        String p_id = scanner.nextLine();
+        scanner.nextLine();
+        System.out.println("enter doctor id ");
+        String d_id = scanner.nextLine();
+        System.out.println("enter problem ");
+        String problem = scanner.nextLine();
+       // System.out.println("select doctor id ");
+//        for (Doctor doctor : doctorManager.doctorList){
+//            System.out.println(doctor);
+//        }
+       //String s_id = scanner.nextLine();
+        Patient patient = findPatientById(p_id);
+        Doctor doctor = findDoctorById(d_id);
+        if(patient==null){
+            System.out.println("patient not found ");
+            return;
+        }
+        if(doctor==null){
+            System.out.println("doctor not found ");
+            return;
+        }
+Appointment appointment = new Appointment(patient ,doctor,problem);
+      adminManager.addPendingAppointment(appointment);
+        System.out.println("Appointment schedule waiting for approve");
+    }
+    private Patient findPatientById(String id) {
+        for (Patient patient : patientManager.patientList) {
+            if (patient.getPatient_id().equals(id)) {
+                return patient;
+            }
+        }
+        return null; // Patient not found
+    }
+
+    private Doctor findDoctorById(String doctorId) {
+        for (Doctor doctor : doctorManager.doctorList) {
+            if (doctor.getDoc_id().equals(doctorId)) {
+                return doctor;
+            }
+        }
+        return null; // Doctor not found
+    }
 
 
 }
